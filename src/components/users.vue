@@ -7,7 +7,12 @@
     </el-breadcrumb>
     <el-row>
       <el-col :span="6">
-        <el-input placeholder="请输入内容" v-model="userData.query"  @keyup.native.13="getUsers" class="input-with-select">
+        <el-input
+          placeholder="请输入内容"
+          v-model="userData.query"
+          @keyup.native.13="getUsers"
+          class="input-with-select"
+        >
           <el-button slot="append" icon="el-icon-search" @click="getUsers"></el-button>
         </el-input>
       </el-col>
@@ -55,11 +60,11 @@
       :page-size="userData.pagesize"
       layout="total, sizes, prev, pager, next, jumper"
       :total="total"
-       @size-change="sizeChange"
+      @size-change="sizeChange"
       @current-change="currentChange"
     ></el-pagination>
     <!-- 新增框 -->
-      <el-dialog title="添加用户" :visible.sync="addVisible">
+    <el-dialog title="添加用户" :visible.sync="addVisible">
       <el-form :model="addForm" :rules="addRules" ref="addForm">
         <el-form-item label="用户名" label-width="120px" prop="username">
           <el-input v-model="addForm.username" autocomplete="off"></el-input>
@@ -77,6 +82,47 @@
       <div slot="footer" class="dialog-footer">
         <el-button @click="addVisible = false">取 消</el-button>
         <el-button type="primary" @click="submitForm('addForm')">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- 编辑框 -->
+    <el-dialog title="编辑用户" :visible.sync="editVisible">
+      <el-form :model="addForm" :rules="addRules" ref="editForm">
+        <el-form-item label="用户名" label-width="120px" prop="username">
+          <el-input v-model="editForm.username" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" label-width="120px">
+          <el-input v-model="editForm.email" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="电话" label-width="120px">
+          <el-input v-model="editForm.mobile" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitForm('editForm')">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- 角色框 -->
+    <el-dialog title="分配角色" :visible.sync="roleVisible">
+      <el-form :model="roleForm" :rules="addRules" ref="roleForm">
+        <el-form-item label="用户名" label-width="120px" prop="username">
+          <el-input v-model="editForm.username" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="请选择角色" label-width="120px">
+          <el-select v-model="roleValue" placeholder="请选择">
+            <el-option label="未分配角色" :value="-1"></el-option>
+            <el-option
+              v-for="item in roles"
+              :key="item.value"
+              :label="item.roleName"
+              :value="item.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="roleVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitForm('roleForm')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -135,13 +181,28 @@ export default {
           { min: 6, max: 12, message: "长度在 6 到 12 个字符", trigger: "blur" }
         ]
       },
-      total:0
+      total: 0,
+       editVisible: false,
+      // 编辑的数据
+      editForm: {
+        username: "",
+        email: "",
+        mobile: ""
+      },
+        roleVisible: false,
+      roleForm:{},
+      roles:[],
+      roleValue:""
     };
   },
   methods: {
     handleEdit(index, row) {
       console.log(index);
       console.log(row);
+      this.$request.getUserById(row.id).then(res => {
+        this.editForm = res.data.data;
+        this.editVisible = true;
+      });
     },
     getUsers() {
       this.$request.getUsers(this.userData).then(res => {
@@ -186,26 +247,52 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          this.$request.addUser(this.addForm).then(res => {
-            console.log(res);
-            this.addVisible = false;
-            this.getUsers();
-            this.$refs[formName].resetFields();
-          });
+          if (formName == "editForm") {
+            this.$request.updataUser(this.editForm).then(res => {
+              if (res.data.meta.status === 200) {
+                this.getUsers();
+                this.editVisible = false;
+              }
+            });
+          } else {
+            this.$request.addUser(this.addForm).then(res => {
+              console.log(res);
+              this.roleVisible = false;
+              this.getUsers();
+              this.$refs[formName].resetFields();
+            });
+          }
         } else {
           this.$message.error("格式不对请重新输入");
           return false;
         }
       });
     },
-  sizeChange(size){
-   this.userData.pagesize = size;
-   this.getUsers()
-  },
-  currentChange(current){
-   this.userData.pagenum = current;
-   this.getUsers()
-  },
+    sizeChange(size) {
+      this.userData.pagesize = size;
+      this.getUsers();
+    },
+    currentChange(current) {
+      this.userData.pagenum = current;
+      this.getUsers();
+    },
+        handleRole(row) {
+      // 获取用户数据
+      this.$request.getUserById(row.id).then(res => {
+        // console.log(res);
+        // 保存数据
+        this.roleForm = res.data.data;
+        // 获取角色数据
+        this.$request.getRoles().then(res => {
+          // console.log(res);
+          this.roles = res.data.data;
+          // 弹框
+          this.roleVisible = true;
+          // 设置默认选中 roleValue的值 跟 this.roleForm.rid
+          this.roleValue = this.roleForm.rid;
+        });
+      });
+    }
   },
   created() {
     // this.$request.getUsers(this.userData).then(res => {
