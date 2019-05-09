@@ -50,11 +50,13 @@
       </el-table-column>
     </el-table>
     <el-pagination
-      :current-page="1"
-      :page-sizes="[2, 4, 6, 8]"
-      :page-size="4"
+      :current-page="userData.pagenum"
+      :page-sizes="[2, 4, 6, 10]"
+      :page-size="userData.pagesize"
       layout="total, sizes, prev, pager, next, jumper"
-      :total="400"
+      :total="total"
+       @size-change="sizeChange"
+      @current-change="currentChange"
     ></el-pagination>
     <!-- 新增框 -->
       <el-dialog title="添加用户" :visible.sync="addVisible">
@@ -132,7 +134,8 @@ export default {
           { required: true, message: "密码也不能为空", trigger: "blur" },
           { min: 6, max: 12, message: "长度在 6 到 12 个字符", trigger: "blur" }
         ]
-      }
+      },
+      total:0
     };
   },
   methods: {
@@ -144,6 +147,7 @@ export default {
       this.$request.getUsers(this.userData).then(res => {
         // console.log(res);
         this.tableData = res.data.data.users;
+        this.total = res.data.data.total;
       });
     },
     handleDelete(index, row) {
@@ -193,7 +197,15 @@ export default {
           return false;
         }
       });
-    }
+    },
+  sizeChange(size){
+   this.userData.pagesize = size;
+   this.getUsers()
+  },
+  currentChange(current){
+   this.userData.pagenum = current;
+   this.getUsers()
+  },
   },
   created() {
     // this.$request.getUsers(this.userData).then(res => {
