@@ -7,8 +7,8 @@
     </el-breadcrumb>
     <el-row>
       <el-col :span="6">
-        <el-input placeholder="请输入内容" v-model="input3" class="input-with-select">
-          <el-button slot="append" icon="el-icon-search"></el-button>
+        <el-input placeholder="请输入内容" v-model="userData.query"  @keyup.native.13="getUsers" class="input-with-select">
+          <el-button slot="append" icon="el-icon-search" @click="getUsers"></el-button>
         </el-input>
       </el-col>
       <el-col :span="12">
