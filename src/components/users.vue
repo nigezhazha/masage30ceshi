@@ -12,7 +12,7 @@
         </el-input>
       </el-col>
       <el-col :span="12">
-        <el-button type="success" plain>添加用户</el-button>
+        <el-button type="success" plain @click="addVisible=true">添加用户</el-button>
       </el-col>
     </el-row>
     <el-table :data="tableData" style="width: 100%">
@@ -23,7 +23,7 @@
       <el-table-column prop="mobile" label="电话"></el-table-column>
       <el-table-column prop="mobile" label="用户状态">
         <template slot-scope="scope">
-        <el-switch v-model="scope.row.mg_state" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+          <el-switch v-model="scope.row.mg_state" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
         </template>
       </el-table-column>
       <el-table-column prop="mobile" label="操作">
@@ -56,6 +56,27 @@
       layout="total, sizes, prev, pager, next, jumper"
       :total="400"
     ></el-pagination>
+    <!-- 新增框 -->
+      <el-dialog title="添加用户" :visible.sync="addVisible">
+      <el-form :model="addForm" :rules="addRules" ref="addForm">
+        <el-form-item label="用户名" label-width="120px" prop="username">
+          <el-input v-model="addForm.username" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" label-width="120px" prop="password">
+          <el-input v-model="addForm.password" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" label-width="120px">
+          <el-input v-model="addForm.email" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="电话" label-width="120px">
+          <el-input v-model="addForm.mobile" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitForm('addForm')">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -94,27 +115,93 @@ export default {
         query: "",
         pagenum: 1,
         pagesize: 10
+      },
+      addVisible: false,
+      addForm: {
+        username: "",
+        password: "",
+        email: "",
+        mobile: ""
+      },
+      addRules: {
+        username: [
+          { required: true, message: "用户名不能为空", trigger: "blur" },
+          { min: 3, max: 5, message: "长度在 3 到 5 个字符", trigger: "blur" }
+        ],
+        password: [
+          { required: true, message: "密码也不能为空", trigger: "blur" },
+          { min: 6, max: 12, message: "长度在 6 到 12 个字符", trigger: "blur" }
+        ]
       }
     };
   },
   methods: {
-    handleEdit(index,row){
+    handleEdit(index, row) {
       console.log(index);
       console.log(row);
     },
-    handleDelete(index,row){
+    getUsers() {
+      this.$request.getUsers(this.userData).then(res => {
+        // console.log(res);
+        this.tableData = res.data.data.users;
+      });
+    },
+    handleDelete(index, row) {
       console.log(index);
       console.log(row);
+      this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$request.deleteUseUserById(row.id).then(res => {
+            if (res.data.meta.status == 200) {
+              this.getUsers();
+            }
+            // })({
+            // type: 'success',
+            // message: '删除成功!'
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
     },
+    stateChange(row) {
+      this.$request
+        .updateUserStatus({ id: row.id, type: row.mg_state })
+        .then(res => {
+          console.log(res);
+        });
+    },
+
+    submitForm(formName) {
+      this.$refs[formName].validate(valid => {
+        if (valid) {
+          this.$request.addUser(this.addForm).then(res => {
+            console.log(res);
+            this.addVisible = false;
+            this.getUsers();
+            this.$refs[formName].resetFields();
+          });
+        } else {
+          this.$message.error("格式不对请重新输入");
+          return false;
+        }
+      });
+    }
   },
   created() {
-    this.$request.getUsers(this.userData).then(res => {
-      console.log(res);
-      this.tableData = res.data.data.users;
-    });
+    // this.$request.getUsers(this.userData).then(res => {
+    //   console.log(res);
+    //   this.tableData = res.data.data.users;
+    this.getUsers();
   }
 };
-
 </script>
 
 <style lang='scss'>
