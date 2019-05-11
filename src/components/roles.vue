@@ -16,26 +16,37 @@
           <!-- 第一级row -->
           <el-row v-for="(level1,index) in props.row._children" :key="index">
             <el-col :span="6">
-              <el-tag type="primary" :key="level1.id" closable>{{level1.authName}}</el-tag>
+              <!-- 第一级tag -->
+              <el-tag
+                type="primary"
+                :key="level1.id"
+                @close="delRight(props.row,level1.id)"
+                closable
+              >{{level1.authName}}</el-tag>
               <span class="el-icon-arrow-right"></span>
             </el-col>
             <el-col :span="18">
-              <!-- 第二级row -->
               <el-row v-for="(level2,i) in level1.children" :key="i">
                 <el-col :span="6">
-                  <el-tag type="success" :key="level2.id" closable>{{level2.authName}}</el-tag>
+                  <!-- 第二级tag -->
+                  <el-tag
+                    type="success"
+                    :key="level2.id"
+                    @close="delRight(props.row,level2.id)"
+                    closable
+                  >{{level2.authName}}</el-tag>
                   <span class="el-icon-arrow-right"></span>
                 </el-col>
                 <el-col :span="18">
-                  <!-- 第三级row -->
                   <el-row>
-                    <el-col :span="6">
-                    </el-col>
+                    <el-col :span="6"></el-col>
                     <el-col :span="18">
+                      <!-- 第三级tag -->
                       <el-tag
                         v-for="(level3,j) in level2.children"
                         type="warning"
                         :key="level3.id"
+                        @close="delRight(props.row,level3.id)"
                         closable
                         class="my-tag"
                       >{{level3.authName}}</el-tag>
@@ -248,6 +259,18 @@ export default {
           return false;
         }
       });
+    },
+    //删指定权限
+    delRight(row, rightId) {
+      console.log(row.id, rightId);
+      this.$request
+        .deleteRight({
+          roleId: row.id,
+          rightId
+        })
+        .then(res => {
+          row._children = res.data.data;
+        });
     }
   }
 };
@@ -258,7 +281,7 @@ export default {
   height: 45px;
   line-height: 45px;
 }
-.my-tag{
+.my-tag {
   margin-right: 5px;
   margin-bottom: 5px;
 }

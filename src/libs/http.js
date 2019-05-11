@@ -117,6 +117,9 @@ const request = {
         return axios.get('orders',{
             params
         })
+    },
+    deleteRight(params){
+        return axios.delete(`roles/${params.roleId}/rights/${params.rightId}`)
     }
 }
 
