@@ -112,7 +112,12 @@ const request = {
     //获取展示的数据
     getReports() {
         return axios.get('reports/type/1')
-      }
+    },
+    getOrderList(params){
+        return axios.get('orders',{
+            params
+        })
+    }
 }
 
 

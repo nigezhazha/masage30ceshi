@@ -112,6 +112,7 @@ export default {
         for (const key in backData) {
           this.option[key] = backData[key];
         }
+        this.option.xAxis[0].boundaryGap = false
         var myChart = echarts.init(document.getElementById("main"));
         myChart.setOption(this.option);
       });
