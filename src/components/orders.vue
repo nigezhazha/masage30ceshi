@@ -49,6 +49,7 @@
             :options="options"
             v-model="selectedOptions2"
           ></el-cascader>
+           <v-distpicker></v-distpicker>
         </el-form-item>
         <el-form-item label="详细地址" label-width="120px">
           <el-input v-model="editForm.addres" autocomplete="off"></el-input>
@@ -65,6 +66,7 @@
 <script>
 import moment from "moment";
 import options from "../assets/city_data2017_element.js";
+import VDistpicker from 'v-distpicker'
 export default {
   name: "orders",
   data() {
@@ -112,6 +114,8 @@ export default {
       selectedOptions2:[]
     };
   },
+    // 本地注册组件
+  components: { VDistpicker },
   filters:{
     formatTime(value){
       return moment(value).format("YYY-MM-DD HH:mm:ss")
