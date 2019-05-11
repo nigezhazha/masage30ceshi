@@ -41,7 +41,7 @@
     ></el-pagination>
       <!-- 编辑框 -->
     <el-dialog title="修改订单地址" :visible.sync="editVisible">
-      <el-form :model="editForm" :rules="addRules" ref="editForm">
+      <el-form :model="editForm" ref="editForm">
         <el-form-item label="省市区/县" label-width="120px">
           <!-- <el-input v-model="editForm.userName" autocomplete="off"></el-input> -->
             <el-cascader

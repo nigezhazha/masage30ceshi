@@ -113,13 +113,24 @@ const request = {
     getReports() {
         return axios.get('reports/type/1')
     },
-    getOrderList(params){
-        return axios.get('orders',{
+    getOrderList(params) {
+        return axios.get('orders', {
             params
         })
     },
-    deleteRight(params){
+    deleteRight(params) {
         return axios.delete(`roles/${params.roleId}/rights/${params.rightId}`)
+    },
+    getRightsTree() {
+        return axios.get('rights/tree')
+    },
+    setRolesRights(params) {
+        return axios.post(`roles/${params.roleId}/rights`, {
+            rids: params.rids
+        })
+    },
+    getMenus(){
+        return axios.get('menus')
     }
 }
 

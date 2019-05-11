@@ -112,6 +112,23 @@
         <el-button type="primary" @click="submitForm('addForm')">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 树形角色框 -->
+    <el-dialog title="分配权限" :visible.sync="rightsVisible">
+      <el-tree
+        :data="rightsData"
+        :props="rightsProps"
+        :default-checked-keys="defaultCheckedKeys"
+        node-key="id"
+        ref='tree'
+        show-checkbox
+        default-expand-all
+      ></el-tree>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="rightsVisible = false">取 消</el-button>
+        <!-- <el-button type="primary" @click="submitForm('rightsForm')">确 定</el-button> -->
+        <el-button type="primary" @click="setRolesRights">确 定</el-button>
+      </div>
+    </el-dialog>
     <!-- 编辑角色框 -->
     <el-dialog title="编辑角色" :visible.sync="editVisible">
       <el-form :model="editForm" :rules="addRules" ref="editForm">
@@ -177,7 +194,15 @@ export default {
       editForm: {
         roleName: "",
         roleDesc: ""
-      }
+      },
+      rightsVisible: false,
+      rightsForm: {},
+      rightsData: [],
+      rightsProps: {
+        children: "children",
+        label: "authName"
+      },
+      defaultCheckedKeys: []
     };
   },
   created() {
@@ -219,7 +244,39 @@ export default {
           });
         });
     },
-    handleRole(row) {},
+    handleRole(row) {
+      this.rightsVisible = true;
+      this.rightsForm=row;
+      this.$request.getRightsTree().then(res => {
+        this.rightsData = res.data.data;
+        let checkedIds = [];
+        // 挨个遍历方法
+        // row._children.forEach(v1=>{
+        //   checkedIds.push(v1.id);
+        //   v1.children.forEach(v2=>{
+        //      checkedIds.push(v2.id);
+        //        v2.children.forEach(v3=>{
+        //      checkedIds.push(v3.id);
+        //   })
+        //   })
+        // });
+
+        // 递归遍历方法
+        function getCheckedKeys(item) {
+          item._children.forEach(v => {
+            checkedIds.push(v.id);
+            if (v.children) {
+              v._children = v.children;
+              getCheckedKeys(v);
+            }
+          });
+        }
+        getCheckedKeys(row);
+        console.log(checkedIds);
+        //设置到data中
+        this.defaultCheckedKeys = checkedIds;
+      });
+    },
     getRoles() {
       this.$request.getRoles().then(res => {
         let data = res.data.data;
@@ -271,6 +328,20 @@ export default {
         .then(res => {
           row._children = res.data.data;
         });
+    },
+    setRolesRights() {
+        console.log(this.$refs.tree.getCheckedKeys());
+        const rids = this.$refs.tree.getCheckedKeys().join(',')
+      this.$request.setRolesRights({
+        roleId:this.rightsForm.id,
+        rids
+      })
+      .then(res=>{
+        if(res.data.meta.status==200){
+          this.rightsVisible = false;
+          this.getRoles()
+        }
+      })
     }
   }
 };
