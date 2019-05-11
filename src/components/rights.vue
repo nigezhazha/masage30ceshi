@@ -5,11 +5,27 @@
       <el-breadcrumb-item>用户管理</el-breadcrumb-item>
       <el-breadcrumb-item>用户列表</el-breadcrumb-item>
     </el-breadcrumb>
-    <el-table :data="tableData" style="width: 100%">
-      <el-table-column prop="serial" label="#" width="40"></el-table-column>
-      <el-table-column prop="name" label="权限名称" width="180"></el-table-column>
-      <el-table-column prop="date" label="路径" width="180"></el-table-column>
-      <el-table-column prop="address" label="层级"></el-table-column>
+    <el-table
+      :data="tableData"
+      style="width: 100%"
+      v-loading="loading"
+      element-loading-background="rgba(255, 105, 180,0.5)"
+      border
+    >
+      <!-- <el-table-column prop="serial" label="#" width="40"></el-table-column> -->
+      <el-table-column type="index" :index="indexMethod"></el-table-column>
+      <el-table-column prop="authName" label="权限名称" width="180"></el-table-column>
+      <el-table-column prop="path" label="路径" width="180"></el-table-column>
+      <el-table-column prop="level" label="层级">
+        <template slot-scope="scope">
+          <!-- 
+              template中必须设置 slot-scope="scope"
+          scope.$index 索引  scope.row 这一行的数据-->
+          {{scope.row.level==0?'一级':''}}
+          {{scope.row.level==1?'二级':''}}
+          {{scope.row.level==2?'三级':''}}
+        </template>
+      </el-table-column>
     </el-table>
   </div>
 </template>
@@ -44,8 +60,27 @@ export default {
           date: "2016-05-03",
           address: "上海市普陀区金沙江路 1516 弄"
         }
-      ]
+      ],
+      loading: true
     };
+  },
+  methods: {
+    indexMethod(index) {
+      return index;
+    }
+  },
+  created() {
+    // 开启loading
+    this.loading = true;
+    this.$request.getListRights().then(res => {
+      // console.log(res);
+      this.tableData = res.data.data;
+      // 关闭loading
+      setTimeout(() => {
+        // 延迟一会
+        this.loading = false;
+      }, 1000);
+    });
   }
 };
 </script>

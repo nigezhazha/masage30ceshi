@@ -74,6 +74,10 @@ const request = {
             mobile:params.mobile
         })
     },
+        // 删除角色
+        deleteUserById(id) {
+            return axios.delete(`users/${id}`)
+          },
     getRoles(){
         return axios.get('roles')
     },
@@ -85,10 +89,11 @@ const request = {
     addRoles(params){
         return axios.post(`roles`,params)
     },
-      // 删除角色
-  deleteRoles(id) {
-    return axios.delete(`roles/${id}`)
-  },
+  
+    // 删除角色
+    deleteRoles(id) {
+        return axios.delete(`roles/${id}`)
+      },
   // 获取角色信息
   getRolesById(id) {
     return axios.get(`roles/${id}`)
@@ -99,6 +104,9 @@ const request = {
       roleName: params.roleName,
       roleDesc: params.roleDesc
     })
+  },
+  getListRights(){
+    return axios.get(`rights/list`)
   }
 }
 

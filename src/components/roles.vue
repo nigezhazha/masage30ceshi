@@ -65,7 +65,7 @@
         <el-button type="primary" @click="submitForm('addForm')">确 定</el-button>
       </div>
     </el-dialog>
-       <!-- 编辑角色框 -->
+    <!-- 编辑角色框 -->
     <el-dialog title="编辑角色" :visible.sync="editVisible">
       <el-form :model="editForm" :rules="addRules" ref="editForm">
         <el-form-item label="角色名称" label-width="120px" prop="roleName">
@@ -118,13 +118,13 @@ export default {
         roleName: "",
         roleDesc: ""
       },
-      addRules:{
-         roleName: [
+      addRules: {
+        roleName: [
           { required: true, message: "角色名称不能为空", trigger: "blur" },
-          { min: 2, max: 5, message: "长度在 3 到 5 个字符", trigger: "blur" }
-        ],
+          { min: 2, max: 8, message: "长度在 3 到 5 个字符", trigger: "blur" }
+        ]
       },
-    // 是否显示编辑框
+      // 是否显示编辑框
       editVisible: false,
       // 编辑的数据
       editForm: {
@@ -134,11 +134,11 @@ export default {
     };
   },
   created() {
-   this.getRoles()
+    this.getRoles();
   },
   methods: {
     handleEdit(index, row) {
-          this.$request.getRolesById(row.id).then(res => {
+      this.$request.getRolesById(row.id).then(res => {
         // console.log(res);
         // 保存起来
         this.editForm = res.data.data;
@@ -147,7 +147,7 @@ export default {
       });
     },
     handleDelete(index, row) {
-        this.$confirm(
+      this.$confirm(
         "此操作将永远删除这个角色，是否确定，友情提示别删主管！！！",
         "提示",
         {
@@ -174,30 +174,30 @@ export default {
     },
     handleRole(row) {},
     getRoles() {
-       this.$request.getRoles().then(res => {
-      let data = res.data.data;
-      data.forEach(v => {
-        v._children = v.children;
-        delete v.children;
+      this.$request.getRoles().then(res => {
+        let data = res.data.data;
+        data.forEach(v => {
+          v._children = v.children;
+          delete v.children;
+        });
+        console.log(data);
+        this.tableData = data;
       });
-      console.log(data);
-      this.tableData = data;
-    });
     },
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-           if (formName == "editForm") {
-               // 提交数据
+          if (formName == "editForm") {
+            // 提交数据
             this.editForm.id = this.editForm.roleId;
             this.$request.updateRoles(this.editForm).then(res => {
-             console.log(res);
+              console.log(res);
               this.editVisible = false;
-                this.getRoles();
-                this.$refs[formName].resetFields();
+              this.getRoles();
+              this.$refs[formName].resetFields();
             });
-           }else{
-                 this.$request.addRoles(this.addForm).then(res => {
+          } else {
+            this.$request.addRoles(this.addForm).then(res => {
               console.log(res);
               // 关闭弹框
               this.addVisible = false;
@@ -206,7 +206,7 @@ export default {
               // 重置表单即可
               this.$refs[formName].resetFields();
             });
-           }
+          }
         } else {
           this.$message.error("格式不对请重新输入");
           return false;

@@ -28,7 +28,12 @@
       <el-table-column prop="mobile" label="电话"></el-table-column>
       <el-table-column prop="mobile" label="用户状态">
         <template slot-scope="scope">
-          <el-switch v-model="scope.row.mg_state" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+          <el-switch
+            v-model="scope.row.mg_state"
+            @change="stateChange(scope.row)"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+          ></el-switch>
         </template>
       </el-table-column>
       <el-table-column prop="mobile" label="操作">
@@ -43,7 +48,7 @@
             plain
             @click="handleEdit(scope.$index, scope.row)"
           ></el-button>
-          <el-button type="success" icon="el-icon-check" size="mini" plain></el-button>
+          <el-button type="success" icon="el-icon-check" size="mini" @click="handleRole(scope.row)" plain></el-button>
           <el-button
             type="danger"
             icon="el-icon-delete"
@@ -87,8 +92,8 @@
     <!-- 编辑框 -->
     <el-dialog title="编辑用户" :visible.sync="editVisible">
       <el-form :model="addForm" :rules="addRules" ref="editForm">
-        <el-form-item label="用户名" label-width="120px" prop="username">
-          <el-input v-model="editForm.username" autocomplete="off"></el-input>
+        <el-form-item label="用户名" label-width="120px" prop="userName">
+          <el-input v-model="editForm.userName" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="邮箱" label-width="120px">
           <el-input v-model="editForm.email" autocomplete="off"></el-input>
@@ -106,7 +111,7 @@
     <el-dialog title="分配角色" :visible.sync="roleVisible">
       <el-form :model="roleForm" :rules="addRules" ref="roleForm">
         <el-form-item label="用户名" label-width="120px" prop="username">
-          <el-input v-model="editForm.username" autocomplete="off"></el-input>
+          <el-input v-model="roleForm.username" autocomplete="off" disabled></el-input>
         </el-form-item>
         <el-form-item label="请选择角色" label-width="120px">
           <el-select v-model="roleValue" placeholder="请选择">
@@ -174,7 +179,7 @@ export default {
       addRules: {
         username: [
           { required: true, message: "用户名不能为空", trigger: "blur" },
-          { min: 3, max: 5, message: "长度在 3 到 5 个字符", trigger: "blur" }
+          { min: 3, max: 8, message: "长度在 3 到 5 个字符", trigger: "blur" }
         ],
         password: [
           { required: true, message: "密码也不能为空", trigger: "blur" },
@@ -182,101 +187,150 @@ export default {
         ]
       },
       total: 0,
-       editVisible: false,
+      editVisible: false,
       // 编辑的数据
       editForm: {
         username: "",
         email: "",
         mobile: ""
       },
-        roleVisible: false,
-      roleForm:{},
-      roles:[],
-      roleValue:""
+      roleVisible: false,
+      roleForm: {},
+      roles: [],
+      roleValue: ""
     };
   },
+  // 方法
   methods: {
+    // 点击编辑按钮
     handleEdit(index, row) {
       console.log(index);
       console.log(row);
+      // 调用接口
       this.$request.getUserById(row.id).then(res => {
+        console.log(res);
+        // 数据获取
         this.editForm = res.data.data;
+        // 弹框
         this.editVisible = true;
       });
     },
+    // 获取数据的方法
     getUsers() {
       this.$request.getUsers(this.userData).then(res => {
-        // console.log(res);
+        // console.log(res);      [].users
         this.tableData = res.data.data.users;
+        // 保存总条数
         this.total = res.data.data.total;
       });
     },
+    // 删除用户
     handleDelete(index, row) {
-      console.log(index);
-      console.log(row);
-      this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+      // console.log(index);
+      // console.log(row);
+      this.$confirm("你真的要把他干掉吗o(╥﹏╥)o！！", "提示", {
+        confirmButtonText: "残忍删除",
+        cancelButtonText: "容朕三思",
         type: "warning"
       })
         .then(() => {
-          this.$request.deleteUseUserById(row.id).then(res => {
+          // 调用接口
+          this.$request.deleteUserById(row.id).then(res => {
+            // console.log(res);
+            // 重新获取数据
             if (res.data.meta.status == 200) {
               this.getUsers();
             }
-            // })({
-            // type: 'success',
-            // message: '删除成功!'
           });
         })
         .catch(() => {
+          // 取消
           this.$message({
             type: "info",
-            message: "已取消删除"
+            message: "你真好！(* ￣3)(ε￣ *)"
           });
         });
     },
+    // 状态 改变
     stateChange(row) {
+      // console.log(row);
       this.$request
         .updateUserStatus({ id: row.id, type: row.mg_state })
         .then(res => {
-          console.log(res);
+          // console.log(res);
+          // if(res.data.meta.status==200){
+          //   this.$message.success(res.data.meta.msg)
+          // }
         });
     },
-
+    // 用户新增
+    // 提交表单
     submitForm(formName) {
+      // 通过ref属性 获取表单 并且调用验证的方法
       this.$refs[formName].validate(valid => {
         if (valid) {
+          // 数据格式没问题
+          // 提交数据
           if (formName == "editForm") {
-            this.$request.updataUser(this.editForm).then(res => {
-              if (res.data.meta.status === 200) {
+            // 编辑用户
+            this.$request.updateUser(this.editForm).then(res => {
+              // console.log(res);
+              if (res.data.meta.status == 200) {
+                // 重新获取数据
                 this.getUsers();
+                // 关闭弹框
                 this.editVisible = false;
               }
             });
+          } else if (formName == "roleForm") {
+            this.$request
+              .updateUserRole({
+                // 用户id
+                id: this.roleForm.id,
+                // 角色id el-select双向数据绑定的值
+                rid: this.roleValue
+              })
+              .then(res => {
+                // console.log(res);
+                if (res.data.meta.status == 200) {
+                  // 重新获取角色
+                  this.getUsers();
+                  // 关闭角色框
+                  this.roleVisible = false;
+                }
+              });
           } else {
             this.$request.addUser(this.addForm).then(res => {
               console.log(res);
-              this.roleVisible = false;
+              // 关闭弹框
+              this.addVisible = false;
+              // 重新获取数据
               this.getUsers();
+              // 重置表单即可
               this.$refs[formName].resetFields();
             });
           }
         } else {
-          this.$message.error("格式不对请重新输入");
+          // 数据有问题
+          this.$message.error("哥们，数据格式不对哦，你是机器人吗？");
           return false;
         }
       });
     },
-    sizeChange(size) {
-      this.userData.pagesize = size;
-      this.getUsers();
-    },
+    // 页码改变
     currentChange(current) {
+      // console.log(current);
       this.userData.pagenum = current;
       this.getUsers();
     },
-        handleRole(row) {
+    // 页容量改变
+    sizeChange(size) {
+      // console.log(size);
+      this.userData.pagesize = size;
+      this.getUsers();
+    },
+    // 弹出角色框
+    handleRole(row) {
       // 获取用户数据
       this.$request.getUserById(row.id).then(res => {
         // console.log(res);
