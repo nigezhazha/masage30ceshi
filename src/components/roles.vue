@@ -13,17 +13,37 @@
     <el-table :data="tableData" style="width: 100%" border>
       <el-table-column type="expand">
         <template slot-scope="props">
-          <el-row  v-for="(level1,index) in props.row._children" :key='index'>
+          <!-- 第一级row -->
+          <el-row v-for="(level1,index) in props.row._children" :key="index">
             <el-col :span="6">
-              <el-tag
-                type="primary"
-               
-                :key="level1.id"
-                closable
-              >{{level1.authName}}</el-tag>
+              <el-tag type="primary" :key="level1.id" closable>{{level1.authName}}</el-tag>
               <span class="el-icon-arrow-right"></span>
             </el-col>
-            <el-col :span="18"></el-col>
+            <el-col :span="18">
+              <!-- 第二级row -->
+              <el-row v-for="(level2,i) in level1.children" :key="i">
+                <el-col :span="6">
+                  <el-tag type="success" :key="level2.id" closable>{{level2.authName}}</el-tag>
+                  <span class="el-icon-arrow-right"></span>
+                </el-col>
+                <el-col :span="18">
+                  <!-- 第三级row -->
+                  <el-row>
+                    <el-col :span="6">
+                    </el-col>
+                    <el-col :span="18">
+                      <el-tag
+                        v-for="(level3,j) in level2.children"
+                        type="warning"
+                        :key="level3.id"
+                        closable
+                        class="my-tag"
+                      >{{level3.authName}}</el-tag>
+                    </el-col>
+                  </el-row>
+                </el-col>
+              </el-row>
+            </el-col>
           </el-row>
         </template>
       </el-table-column>
@@ -237,5 +257,9 @@ export default {
 .my-breadcrumb {
   height: 45px;
   line-height: 45px;
+}
+.my-tag{
+  margin-right: 5px;
+  margin-bottom: 5px;
 }
 </style>
