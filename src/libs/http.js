@@ -9,7 +9,7 @@ axios.defaults.baseURL = 'http://127.0.0.1:8888/api/private/v1';
 axios.interceptors.request.use(function (config) {
     // Do something before request is sent
     console.log(config);
-    config.headers.Authorization=window.sessionStorage.getItem('token')
+    config.headers.Authorization = window.sessionStorage.getItem('token')
     return config;
 }, function (error) {
     // Do something with request error
@@ -20,12 +20,12 @@ axios.interceptors.request.use(function (config) {
 axios.interceptors.response.use(function (response) {
     // Do something with response data
     console.log(response);
-    if(response.data.meta.status === 200){
+    if (response.data.meta.status === 200) {
         Vue.prototype.$message.success(response.data.meta.msg)
-    }else if(
+    } else if (
         response.data.meta.status == 400 &&
         response.data.meta.msg == '无效token'
-    ){
+    ) {
         new Vue().$message.warning('token好像是你伪造的！')
         // 编程式导航
         router.push('login')
@@ -52,62 +52,67 @@ const request = {
         return axios.get('users', {
             params,
             // headers: {
-                // Authorization: window.sessionStorage.getItem('token')
+            // Authorization: window.sessionStorage.getItem('token')
             // }
         })
     },
-    updateUserStatus(params){
+    updateUserStatus(params) {
         return axios.put(`users/${params.id}/state/${params.type}`)
     },
-    deleteUseUserById(id){
+    deleteUseUserById(id) {
         return axios.delete(`users/${id}`)
     },
-    addUser(params){
-        return axios.post('users',params)
+    addUser(params) {
+        return axios.post('users', params)
     },
-    getUserById(id){
+    getUserById(id) {
         return axios.get(`users/${id}`)
     },
     updateUser(params) {
-        return axios.put(`users/${params.id}`,{
-            email:params.email,
-            mobile:params.mobile
+        return axios.put(`users/${params.id}`, {
+            email: params.email,
+            mobile: params.mobile
         })
     },
-        // 删除角色
-        deleteUserById(id) {
-            return axios.delete(`users/${id}`)
-          },
-    getRoles(){
+    // 删除角色
+    deleteUserById(id) {
+        return axios.delete(`users/${id}`)
+    },
+    getRoles() {
         return axios.get('roles')
     },
-    updateUserRole(params){
-        return axios.put(`users/${params.id}/role`,{
-            rid:params.rid
+    updateUserRole(params) {
+        return axios.put(`users/${params.id}/role`, {
+            rid: params.rid
         })
     },
-    addRoles(params){
-        return axios.post(`roles`,params)
+    addRoles(params) {
+        return axios.post(`roles`, params)
     },
-  
+
     // 删除角色
     deleteRoles(id) {
         return axios.delete(`roles/${id}`)
-      },
-  // 获取角色信息
-  getRolesById(id) {
-    return axios.get(`roles/${id}`)
-  },
-  // 修改角色
-  updateRoles(params) {
-    return axios.put(`roles/${params.id}`, {
-      roleName: params.roleName,
-      roleDesc: params.roleDesc
-    })
-  },
-  getListRights(){
-    return axios.get(`rights/list`)
-  }
+    },
+    // 获取角色信息
+    getRolesById(id) {
+        return axios.get(`roles/${id}`)
+    },
+    // 修改角色
+    updateRoles(params) {
+        return axios.put(`roles/${params.id}`, {
+            roleName: params.roleName,
+            roleDesc: params.roleDesc
+        })
+    },
+    getListRights() {
+        return axios.get(`rights/list`)
+    },
+
+    //获取展示的数据
+    getReports() {
+        return axios.get('reports/type/1')
+      }
 }
 
 
@@ -116,3 +121,4 @@ export default {
         Vue.prototype.$request = request
     }
 }
+
