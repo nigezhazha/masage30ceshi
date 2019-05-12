@@ -21,15 +21,20 @@
     </el-header>
     <el-container>
       <el-aside width="200px" class="index-aside">
-         <el-menu router default-active="2" class="el-menu-vertical-demo">
+        <el-menu router default-active="2" class="el-menu-vertical-demo">
           <!-- 用户 -->
-          <el-submenu v-for="(item, index) in menuList" :key="index" :index="item.order">
+          <el-submenu
+            v-for="(item, index) in $store.state.menuList"
+            :key="index"
+            :index="item.order"
+          >
             <template slot="title">
               <i class="el-icon-location"></i>
               <span>{{item.authName}}</span>
             </template>
             <el-menu-item v-for="(it, i) in item.children" :key="i" :index="it.path">
-              <i class="el-icon-menu"></i>{{it.authName}}
+              <i class="el-icon-menu"></i>
+              {{it.authName}}
             </el-menu-item>
           </el-submenu>
         </el-menu>
@@ -44,30 +49,30 @@
 <script>
 export default {
   name: "index",
-  data(){
+  data() {
     return {
-      menuList:[]
-    }
+      menuList: []
+    };
   },
   beforeCreate() {
-    if(!window.sessionStorage.getItem('token')){
-      this.$message.warning('请登陆');
-      this.$router.push('login')
+    if (!window.sessionStorage.getItem("token")) {
+      this.$message.warning("请登陆");
+      this.$router.push("login");
     }
   },
   created() {
-    this.$request.getMenus().then(res=>{
+    this.$request.getMenus().then(res => {
       console.log(res);
-      this.menuList = res.data.data
-    })
+      // this.menuList = res.data.data
+      this.$store.commit("changeMenuList", res.data.data);
+    });
   },
   methods: {
-    logout(){
-      window.sessionStorage.removeItem('token')
-      this.$router.push('login')
+    logout() {
+      window.sessionStorage.removeItem("token");
+      this.$router.push("login");
     }
-  },
-
+  }
 };
 </script>
 

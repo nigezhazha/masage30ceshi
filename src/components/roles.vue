@@ -119,7 +119,7 @@
         :props="rightsProps"
         :default-checked-keys="defaultCheckedKeys"
         node-key="id"
-        ref='tree'
+        ref="tree"
         show-checkbox
         default-expand-all
       ></el-tree>
@@ -246,7 +246,7 @@ export default {
     },
     handleRole(row) {
       this.rightsVisible = true;
-      this.rightsForm=row;
+      this.rightsForm = row;
       this.$request.getRightsTree().then(res => {
         this.rightsData = res.data.data;
         let checkedIds = [];
@@ -264,10 +264,12 @@ export default {
         // 递归遍历方法
         function getCheckedKeys(item) {
           item._children.forEach(v => {
-            checkedIds.push(v.id);
+            // checkedIds.push(v.id);
             if (v.children) {
               v._children = v.children;
               getCheckedKeys(v);
+            }else{
+              checkedIds.push(v.id);
             }
           });
         }
@@ -330,18 +332,27 @@ export default {
         });
     },
     setRolesRights() {
-        console.log(this.$refs.tree.getCheckedKeys());
-        const rids = this.$refs.tree.getCheckedKeys().join(',')
-      this.$request.setRolesRights({
-        roleId:this.rightsForm.id,
-        rids
-      })
-      .then(res=>{
-        if(res.data.meta.status==200){
-          this.rightsVisible = false;
-          this.getRoles()
-        }
-      })
+      console.log(this.$refs.tree.getCheckedKeys());
+      // const rids = this.$refs.tree.getCheckedKeys().join(',')
+      let oldefs = this.$refs.tree.getCheckedKeys();
+      let newrefs = this.$refs.tree.getHalfCheckedKeys();
+      let rids = oldefs.concat(newrefs).join();
+      this.$request
+        .setRolesRights({
+          roleId: this.rightsForm.id,
+          rids
+        })
+        .then(res => {
+          if (res.data.meta.status == 200) {
+            this.rightsVisible = false;
+            this.getRoles();
+          }
+          this.$request.getMenus().then(res => {
+            console.log(res);
+            // this.menuList = res.data.data
+            this.$store.commit("changeMenuList", res.data.data);
+          });
+        });
     }
   }
 };
